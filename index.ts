@@ -1,13 +1,13 @@
 import stream from 'readable-stream'
-import { Readable } from 'stream'
+import internal, { Readable } from 'stream'
 
 interface FactoryStreamCallback {
-  (err: Error | null, stream: null): any;
-  (err: null, stream: Readable): any;
+  (err: Error | null, stream: null): any
+  (err: null, stream: Readable): any
 }
-type LazyStream = () => Readable;
-type FactoryStream = (cb: FactoryStreamCallback) => void;
-type Streams = Array<LazyStream | Readable> | FactoryStream;
+type LazyStream = () => Readable
+type FactoryStream = (cb: FactoryStreamCallback) => void
+type Streams = Array<LazyStream | Readable> | FactoryStream
 
 function toStreams2Obj (s: LazyStream | Readable):Readable {
   return toStreams2(s, { objectMode: true, highWaterMark: 16 })
@@ -27,16 +27,17 @@ function toStreams2 (s: LazyStream | Readable, opts?:{}):Readable {
   return wrap
 }
 
-
+type MultiStreamOptions = internal.ReadableOptions
 
 
 class MultiStream extends Readable {
-  _drained:boolean;
-  _forwarding:boolean;
-  _current: Readable;
-  _toStreams2:(s: LazyStream | Readable, opts?:{})=>Readable
-  _queue: FactoryStream | Array<LazyStream | Readable>;
-  constructor (streams:Streams, opts:{[key:string]:any}) {
+  _drained: boolean
+  _forwarding: boolean
+  _current: Readable
+  _toStreams2: (s: LazyStream | Readable, opts?:{}) => Readable
+  _queue: FactoryStream | Array<LazyStream | Readable>
+  
+  constructor (streams:Streams, opts?: MultiStreamOptions) {
     super(opts)
     this.destroyed = false
 
@@ -44,7 +45,7 @@ class MultiStream extends Readable {
     this._forwarding = false
     this._current = null
     this._toStreams2 = (opts && opts.objectMode) ? toStreams2Obj : toStreams2Buf
-
+    
     if (typeof streams === 'function') {
       this._queue = streams
     } else {
