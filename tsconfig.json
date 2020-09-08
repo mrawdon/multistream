@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "declaration":true,
+        "outDir": "build",
+        "strict": true,
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "allowSyntheticDefaultImports": true,
+        "strictNullChecks": false
+    },
+    "include": [
+        "index.ts"
+    ]
+}

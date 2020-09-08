@@ -7,16 +7,19 @@
     "url": "https://github.com/feross/multistream/issues"
   },
   "dependencies": {
+    "@types/node": "^14.6.4",
     "readable-stream": "^3.4.0"
   },
   "devDependencies": {
+    "@types/readable-stream": "^2.3.9",
     "airtap": "^2.0.3",
     "array-to-stream": "^1.0.0",
     "simple-concat": "^1.0.0",
     "standard": "*",
     "string-to-stream": "^3.0.0",
     "tape": "^4.0.0",
-    "through": "^2.3.4"
+    "through": "^2.3.4",
+    "typescript": "^3.7.4"
   },
   "homepage": "https://github.com/feross/multistream",
   "keywords": [
@@ -35,7 +38,7 @@
     "joiner"
   ],
   "license": "MIT",
-  "main": "index.js",
+  "main": "build/index.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/feross/multistream.git"
@@ -44,6 +47,7 @@
     "test": "standard && npm run test-node && npm run test-browser",
     "test-browser": "airtap -- test/*.js",
     "test-browser-local": "airtap --local -- test/*.js",
-    "test-node": "tape test/*.js"
+    "test-node": "tape test/*.js",
+    "postinstall": "tsc --sourceMap || true"
   }
 }

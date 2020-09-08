@@ -1,27 +1,43 @@
-var stream = require('readable-stream')
+import stream from 'readable-stream'
+import { Readable } from 'stream'
 
-function toStreams2Obj (s) {
+interface FactoryStreamCallback {
+  (err: Error | null, stream: null): any;
+  (err: null, stream: Readable): any;
+}
+type LazyStream = () => Readable;
+type FactoryStream = (cb: FactoryStreamCallback) => void;
+type Streams = Array<LazyStream | Readable> | FactoryStream;
+
+function toStreams2Obj (s: LazyStream | Readable):Readable {
   return toStreams2(s, { objectMode: true, highWaterMark: 16 })
 }
 
-function toStreams2Buf (s) {
+function toStreams2Buf (s:  LazyStream | Readable):Readable {
   return toStreams2(s)
 }
 
-function toStreams2 (s, opts) {
-  if (!s || typeof s === 'function' || s._readableState) return s
+function toStreams2 (s: LazyStream | Readable, opts?:{}):Readable {
+  if (!s || typeof s === 'function' || (s as any)._readableState) return s as Readable
 
   var wrap = new stream.Readable(opts).wrap(s)
-  if (s.destroy) {
-    wrap.destroy = s.destroy.bind(s)
+  if(typeof s !=="string" && s.destroy) {
+    (wrap as any).destroy = s.destroy.bind(s)
   }
   return wrap
 }
 
-class MultiStream extends stream.Readable {
-  constructor (streams, opts) {
-    super(opts)
 
+
+
+class MultiStream extends Readable {
+  _drained:boolean;
+  _forwarding:boolean;
+  _current: Readable;
+  _toStreams2:(s: LazyStream | Readable, opts?:{})=>Readable
+  _queue: FactoryStream | Array<LazyStream | Readable>;
+  constructor (streams:Streams, opts:{[key:string]:any}) {
+    super(opts)
     this.destroyed = false
 
     this._drained = false
@@ -58,14 +74,14 @@ class MultiStream extends stream.Readable {
     this._forwarding = false
   }
 
-  destroy (err) {
+  destroy (err?: Error):void {
     if (this.destroyed) return
     this.destroyed = true
 
     if (this._current && this._current.destroy) this._current.destroy()
     if (typeof this._queue !== 'function') {
       this._queue.forEach(stream => {
-        if (stream.destroy) stream.destroy()
+        if ((stream as Readable).destroy) (stream as Readable).destroy()
       })
     }
 
@@ -77,7 +93,7 @@ class MultiStream extends stream.Readable {
     this._current = null
 
     if (typeof this._queue === 'function') {
-      this._queue((err, stream) => {
+      this._queue((err:Error, stream:Readable) => {
         if (err) return this.destroy(err)
         stream = this._toStreams2(stream)
         this._attachErrorListener(stream)
@@ -86,14 +102,14 @@ class MultiStream extends stream.Readable {
     } else {
       var stream = this._queue.shift()
       if (typeof stream === 'function') {
-        stream = this._toStreams2(stream())
+        stream = this._toStreams2((stream as LazyStream)())
         this._attachErrorListener(stream)
       }
       this._gotNextStream(stream)
     }
   }
 
-  _gotNextStream (stream) {
+  _gotNextStream (stream: Readable) {
     if (!stream) {
       this.push(null)
       this.destroy()
@@ -108,7 +124,7 @@ class MultiStream extends stream.Readable {
     }
 
     const onClose = () => {
-      if (!stream._readableState.ended) {
+      if (!(stream as any)._readableState.ended) {
         this.destroy()
       }
     }
@@ -126,10 +142,10 @@ class MultiStream extends stream.Readable {
     stream.once('close', onClose)
   }
 
-  _attachErrorListener (stream) {
+  _attachErrorListener (stream: Readable) {
     if (!stream) return
 
-    const onError = (err) => {
+    const onError = (err: Error) => {
       stream.removeListener('error', onError)
       this.destroy(err)
     }
@@ -138,7 +154,8 @@ class MultiStream extends stream.Readable {
   }
 }
 
-MultiStream.obj = streams => (
+
+(MultiStream as any).obj = (streams:Streams) => (
   new MultiStream(streams, { objectMode: true, highWaterMark: 16 })
 )
 
