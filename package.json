@@ -8,10 +8,10 @@
   },
   "dependencies": {
     "@types/node": "^14.6.4",
+    "@types/readable-stream": "^2.3.9",
     "readable-stream": "^3.4.0"
   },
   "devDependencies": {
-    "@types/readable-stream": "^2.3.9",
     "airtap": "^2.0.3",
     "array-to-stream": "^1.0.0",
     "simple-concat": "^1.0.0",
