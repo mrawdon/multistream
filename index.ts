@@ -1,5 +1,5 @@
 import stream from 'readable-stream'
-import internal, { Readable } from 'stream'
+import { Readable } from 'stream'
 
 interface FactoryStreamCallback {
   (err: Error | null, stream: null): any
@@ -32,7 +32,7 @@ type MultiStreamOptions = stream.ReadableOptions & {
 }
 
 
-class MultiStream extends Readable {
+class MultiStream extends stream.Readable {
   _drained: boolean
   _forwarding: boolean
   _current: Readable
@@ -77,7 +77,7 @@ class MultiStream extends Readable {
     this._forwarding = false
   }
 
-  destroy (err?: Error):void {
+  destroy(err?: Error): this {
     if (this.destroyed) return
     this.destroyed = true
 
