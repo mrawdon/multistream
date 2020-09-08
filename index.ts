@@ -17,7 +17,7 @@ function toStreams2Buf (s:  LazyStream | Readable):Readable {
   return toStreams2(s)
 }
 
-function toStreams2 (s: LazyStream | Readable, opts?:internal.ReadableOptions):Readable {
+function toStreams2 (s: LazyStream | Readable, opts?:stream.ReadableOptions):Readable {
   if (!s || typeof s === 'function' || (s as any)._readableState) return s as Readable
 
   var wrap = new stream.Readable(opts).wrap(s)
@@ -27,7 +27,7 @@ function toStreams2 (s: LazyStream | Readable, opts?:internal.ReadableOptions):R
   return wrap
 }
 
-type MultiStreamOptions = internal.ReadableOptions & {
+type MultiStreamOptions = stream.ReadableOptions & {
   _errorHandler?: (err:Error)=>boolean
 }
 
