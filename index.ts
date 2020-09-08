@@ -27,7 +27,9 @@ function toStreams2 (s: LazyStream | Readable, opts?:{}):Readable {
   return wrap
 }
 
-type MultiStreamOptions = internal.ReadableOptions
+type MultiStreamOptions = internal.ReadableOptions & {
+  _errorHandler?: (err:Error)=>boolean
+}
 
 
 class MultiStream extends Readable {
@@ -36,7 +38,7 @@ class MultiStream extends Readable {
   _current: Readable
   _toStreams2: (s: LazyStream | Readable, opts?:{}) => Readable
   _queue: FactoryStream | Array<LazyStream | Readable>
-  
+  _errorHandler:(err:Error) => boolean
   constructor (streams:Streams, opts?: MultiStreamOptions) {
     super(opts)
     this.destroyed = false
@@ -45,7 +47,7 @@ class MultiStream extends Readable {
     this._forwarding = false
     this._current = null
     this._toStreams2 = (opts && opts.objectMode) ? toStreams2Obj : toStreams2Buf
-    
+    this._errorHandler = opts && opts._errorHandler
     if (typeof streams === 'function') {
       this._queue = streams
     } else {
@@ -147,6 +149,13 @@ class MultiStream extends Readable {
     if (!stream) return
 
     const onError = (err: Error) => {
+      if(!this._errorHandler || !this._errorHandler(err)){
+        stream.removeListener('error', onError)
+        this.destroy(err)
+      }else{
+        stream.removeListener('error', onError)
+        this._next()
+      }
       stream.removeListener('error', onError)
       this.destroy(err)
     }
