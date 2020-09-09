@@ -32,7 +32,7 @@ export type MultiStreamOptions = stream.ReadableOptions & {
 }
 
 
-export class MultiStream extends stream.Readable {
+export default class MultiStream extends stream.Readable {
   _drained: boolean
   _forwarding: boolean
   _current: Readable
@@ -156,8 +156,6 @@ export class MultiStream extends stream.Readable {
         stream.removeListener('error', onError)
         this._next()
       }
-      stream.removeListener('error', onError)
-      this.destroy(err)
     }
 
     stream.once('error', onError)
