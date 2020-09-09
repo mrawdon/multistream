@@ -28,7 +28,7 @@ function toStreams2 (s: LazyStream | Readable, opts?:stream.ReadableOptions):Rea
 }
 
 type MultiStreamOptions = stream.ReadableOptions & {
-  _errorHandler?: (err:Error)=>boolean
+  errorHandler?: (err:Error)=>boolean
 }
 
 
@@ -47,7 +47,7 @@ class MultiStream extends stream.Readable {
     this._forwarding = false
     this._current = null
     this._toStreams2 = (opts && opts.objectMode) ? toStreams2Obj : toStreams2Buf
-    this._errorHandler = opts && opts._errorHandler
+    this._errorHandler = opts && opts.errorHandler
     if (typeof streams === 'function') {
       this._queue = streams
     } else {
