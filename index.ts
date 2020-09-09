@@ -32,7 +32,7 @@ type MultiStreamOptions = stream.ReadableOptions & {
 }
 
 
-class MultiStream extends stream.Readable {
+export class MultiStream extends stream.Readable {
   _drained: boolean
   _forwarding: boolean
   _current: Readable
