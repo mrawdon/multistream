@@ -27,7 +27,7 @@ function toStreams2 (s: LazyStream | Readable, opts?:stream.ReadableOptions):Rea
   return wrap
 }
 
-type MultiStreamOptions = stream.ReadableOptions & {
+export type MultiStreamOptions = stream.ReadableOptions & {
   errorHandler?: (err:Error)=>boolean
 }
 
